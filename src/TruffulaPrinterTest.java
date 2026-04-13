@@ -38,22 +38,26 @@ public class TruffulaPrinterTest {
      * On Unix-like systems, files prefixed with a dot (.) are treated as hidden.
      * On Windows, this method also sets the DOS "hidden" file attribute.
      * 
-     * You do not need to modify this method, but you SHOULD use it when creating hidden files
-     * for your tests. This will make sure that your tests work on both Windows and UNIX-like systems.
+     * You do not need to modify this method, but you SHOULD use it when creating
+     * hidden files
+     * for your tests. This will make sure that your tests work on both Windows and
+     * UNIX-like systems.
      *
      * @param parentFolder the directory in which to create the hidden file
-     * @param filename the name of the hidden file; must start with a dot (.)
+     * @param filename     the name of the hidden file; must start with a dot (.)
      * @return a File object representing the created hidden file
-     * @throws IOException if an I/O error occurs during file creation or attribute setting
-     * @throws IllegalArgumentException if the filename does not start with a dot (.)
+     * @throws IOException              if an I/O error occurs during file creation
+     *                                  or attribute setting
+     * @throws IllegalArgumentException if the filename does not start with a dot
+     *                                  (.)
      */
     private static File createHiddenFile(File parentFolder, String filename) throws IOException {
-        if(!filename.startsWith(".")) {
+        if (!filename.startsWith(".")) {
             throw new IllegalArgumentException("Hidden files/folders must start with a '.'");
         }
         File hidden = new File(parentFolder, filename);
         hidden.createNewFile();
-        if(isWindows()) {
+        if (isWindows()) {
             Path path = Paths.get(hidden.toURI());
             Files.setAttribute(path, "dos:hidden", Boolean.TRUE, LinkOption.NOFOLLOW_LINKS);
         }
@@ -64,17 +68,17 @@ public class TruffulaPrinterTest {
     public void testPrintTree_ExactOutput_WithCustomPrintStream(@TempDir File tempDir) throws IOException {
         // Build the example directory structure:
         // myFolder/
-        //    .hidden.txt
-        //    Apple.txt
-        //    banana.txt
-        //    Documents/
-        //       images/
-        //          Cat.png
-        //          cat.png
-        //          Dog.png
-        //       notes.txt
-        //       README.md
-        //    zebra.txt
+        // .hidden.txt
+        // Apple.txt
+        // banana.txt
+        // Documents/
+        // images/
+        // Cat.png
+        // cat.png
+        // Dog.png
+        // notes.txt
+        // README.md
+        // zebra.txt
 
         // Create "myFolder"
         File myFolder = new File(tempDir, "myFolder");
@@ -148,5 +152,69 @@ public class TruffulaPrinterTest {
 
         // Assert that the output matches the expected output exactly
         assertEquals(expected.toString(), output);
+    }
+
+    @Test
+    void testPrintTreeSimpleStructure(@TempDir File tempDir) throws Exception {
+        File root = new File(tempDir, "root");
+        root.mkdir();
+
+        new File(root, "file.txt").createNewFile();
+
+        TruffulaOptions options = new TruffulaOptions(root, false, true);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+
+        TruffulaPrinter printer = new TruffulaPrinter(options, ps);
+        printer.printTree();
+
+        String output = baos.toString();
+
+        assertTrue(output.contains("root/"));
+        assertTrue(output.contains("   file.txt"));
+    }
+
+    @Test
+    void testPrintTreeNestedStructure(@TempDir File tempDir) throws Exception {
+        File root = new File(tempDir, "root");
+        root.mkdir();
+
+        File sub = new File(root, "sub");
+        sub.mkdir();
+
+        new File(sub, "inside.txt").createNewFile();
+
+        TruffulaOptions options = new TruffulaOptions(root, false, true);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+
+        TruffulaPrinter printer = new TruffulaPrinter(options, ps);
+        printer.printTree();
+
+        String output = baos.toString();
+
+        assertTrue(output.contains("root/"));
+        assertTrue(output.contains("   sub/"));
+        assertTrue(output.contains("      inside.txt"));
+    }
+
+    @Test
+    void testPrintTreeEmptyDirectory(@TempDir File tempDir) {
+        File root = new File(tempDir, "empty");
+        root.mkdir();
+
+        TruffulaOptions options = new TruffulaOptions(root, false, true);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+
+        TruffulaPrinter printer = new TruffulaPrinter(options, ps);
+        printer.printTree();
+
+        String output = baos.toString();
+
+        assertTrue(output.contains("empty/"));
     }
 }
