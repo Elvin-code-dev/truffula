@@ -9,6 +9,8 @@ PLEASE MAKE FREQUENT COMMITS AS YOU FILL OUT THIS FILE.
 -From what i understood it will create a truffula options object using arguments
 -Then it will create a truffula printer object 
 -The last thing it deos is calls print tree to display the directory structure
+-The args array can have different sizes depending on what the user types
+-Order of flags does not matter, but path is always last
 
 ## ConsoleColor.java
 -This is like an enum that stores diffrent kinds of colors 
@@ -27,6 +29,8 @@ PLEASE MAKE FREQUENT COMMITS AS YOU FILL OUT THIS FILE.
 -The test file checks if the correct colored output is printed
 -It uses ByteArrayOutputStream to get or see the output instead of printing it to the console
 -Then it compares expected output with actual output
+-print and println both use the same logic but println adds a newline
+-The color is added before the message and reset after
 
 ## TruffulaOptions.java / TruffulaOptionsTest.java
 -This class bascially just reads command line arguments
@@ -36,6 +40,8 @@ PLEASE MAKE FREQUENT COMMITS AS YOU FILL OUT THIS FILE.
 -The last argument is always the directory path
 -from what i can see it uses java.io.File to check if the path exists and is a directory
 -the test checks if the correct root directory is set and if flags like -h and -nc work correctly
+-Loop stops before last index because last arg is always the path
+-Throws different exceptions depending on what goes wrong
 
 ## TruffulaPrinter.java / TruffulaPrinterTest.java
 -This class prints the directory tree
@@ -48,6 +54,8 @@ PLEASE MAKE FREQUENT COMMITS AS YOU FILL OUT THIS FILE.
 -It uses ColorPrinter instead of System.out
 -The test builds a fake directory structure
 -Then it checks if the output matches exactly
+-listFiles can return null, so it needs a null check
+-Recursion increases depth each time to control indentation
 
 ## AlphabeticalFileSorter.java
 -This class bascialy just sorts files alphabetically
