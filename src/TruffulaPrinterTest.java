@@ -263,4 +263,33 @@ public class TruffulaPrinterTest {
         assertTrue(output.contains("   .hidden.txt"));
     }
 
+    @Test
+    void testPrintTreeColorCyclesByDepth(@TempDir File tempDir) throws Exception {
+        File root = new File(tempDir, "rootDir");
+        root.mkdir();
+
+        new File(root, "file.txt").createNewFile();
+
+        File subDir = new File(root, "subDir");
+        subDir.mkdir();
+
+        new File(subDir, "nested.txt").createNewFile();
+
+        TruffulaOptions options = new TruffulaOptions(root, false, true);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+
+        TruffulaPrinter printer = new TruffulaPrinter(options, ps);
+        printer.printTree();
+
+        String output = baos.toString();
+        String nl = System.lineSeparator();
+        String reset = ConsoleColor.RESET.toString();
+
+        assertTrue(output.contains(ConsoleColor.WHITE + "rootDir/" + nl + reset));
+        assertTrue(output.contains(ConsoleColor.PURPLE + "   file.txt" + nl + reset));
+        assertTrue(output.contains(ConsoleColor.PURPLE + "   subDir/" + nl + reset));
+        assertTrue(output.contains(ConsoleColor.YELLOW + "      nested.txt" + nl + reset));
+    }
 }

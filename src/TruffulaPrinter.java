@@ -108,10 +108,20 @@ public class TruffulaPrinter {
    * README.md
    * zebra.txt
    */
+
+  // this method will print the tree
   public void printTree() {
-    // get the root directory from the options and start the recursive priting
     File root = options.getRoot();
+    out.setCurrentColor(getColor(0));
     printTreeHelper(root, 0);
+  }
+
+  // helper method to get the color for the current depth of the tree
+  private ConsoleColor getColor(int depth) {
+    if (!options.isUseColor()) {
+      return ConsoleColor.WHITE;
+    }
+    return colorSequence.get(depth % colorSequence.size());
   }
 
   // here i use a helper method to do the recursion and keep track of the depth of
@@ -125,6 +135,8 @@ public class TruffulaPrinter {
       indent += "   ";
     }
 
+    // set the color for the current level of the tree
+    out.setCurrentColor(getColor(depth));
     // if the color is enabled then we set the color to the color in the color
     // pattern
     if (file.isDirectory()) {
