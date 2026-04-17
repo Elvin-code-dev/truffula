@@ -1,6 +1,8 @@
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -9,9 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TruffulaPrinterTest {
 
@@ -217,4 +216,51 @@ public class TruffulaPrinterTest {
 
         assertTrue(output.contains("empty/"));
     }
+
+    @Test
+    void testHiddenFileNotShownWhenShowHiddenFalse(@TempDir File tempDir) throws Exception {
+        File root = new File(tempDir, "root");
+        root.mkdir();
+
+        new File(root, "visible.txt").createNewFile();
+        createHiddenFile(root, ".hidden.txt");
+
+        TruffulaOptions options = new TruffulaOptions(root, false, true);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+
+        TruffulaPrinter printer = new TruffulaPrinter(options, ps);
+        printer.printTree();
+
+        String output = baos.toString();
+
+        assertTrue(output.contains("root/"));
+        assertTrue(output.contains("   visible.txt"));
+        assertFalse(output.contains(".hidden.txt"));
+    }
+
+    @Test
+    void testHiddenFileShownWhenShowHiddenTrue(@TempDir File tempDir) throws Exception {
+        File root = new File(tempDir, "root");
+        root.mkdir();
+
+        new File(root, "visible.txt").createNewFile();
+        createHiddenFile(root, ".hidden.txt");
+
+        TruffulaOptions options = new TruffulaOptions(root, true, true);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+
+        TruffulaPrinter printer = new TruffulaPrinter(options, ps);
+        printer.printTree();
+
+        String output = baos.toString();
+
+        assertTrue(output.contains("root/"));
+        assertTrue(output.contains("   visible.txt"));
+        assertTrue(output.contains("   .hidden.txt"));
+    }
+
 }
